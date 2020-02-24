@@ -1,4 +1,7 @@
-INCLUDE Irvine32.inc
+TITLE TicTacToe (main.asm)
+
+INCLUDE C:/Irvine/Irvine32.inc
+INCLUDELIB C:/Irvine/Irvine32.lib
 
 .386
 .model flat, stdcall
