@@ -1,5 +1,5 @@
 TITLE TicTacToe (main.asm)
-;Test
+
 INCLUDE C:/Irvine/Irvine32.inc
 INCLUDELIB C:/Irvine/Irvine32.lib
 
