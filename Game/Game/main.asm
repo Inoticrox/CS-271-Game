@@ -9,7 +9,7 @@ INCLUDELIB C:/Irvine/Irvine32.lib
 ExitProcess proto, dwExitCode: dword
 
 .data
-	
+	board DWORD 5 DUP(5 DUP(?))
 
 .code
 
