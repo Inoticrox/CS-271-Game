@@ -55,7 +55,6 @@ mXPrompt MACRO
 ENDM
 
 mWinCheckXCol MACRO
-
 	mov ESI, 0
 	;ECX is outer loop counter
 	mov ECX, 0
@@ -69,6 +68,7 @@ innerLoop:
 	mov EDX, OFFSET xChar
 	;This isn't working, do a write in for each ECX and EBX to see if it isn't accessing the right indexes
 	mov EAX, board[ECX][EBX]
+	;Don't think the comparison is working. Need to figure out how to compare strings
 	cmp EAX, EDX
 	je iEqual
 	jmp innerLoopDone
@@ -82,7 +82,6 @@ iEqual:
 	cmp EBX, 5
 	je innerLoopDone
 	inc EBX
-	
 	jmp innerLoop
 
 innerLoopDone:
@@ -133,11 +132,24 @@ ENDM
 main proc
 	
 	mov EDX, OFFSET xChar
-	mov board[0][1], EDX
-	mov board[0][2], EDX
-	mov board[0][3], EDX
+	mov board[1][0], OFFSET xChar
+	mov board[2][0], EDX
+	mov board[3][0], EDX
+	
+	mov EDX, OFFSET board[1][0]
+	call WriteString
+	mov EDI, OFFSET xChar
+	;call WriteString
+	;mov EBX, xChar
+	cmp EDI, EDX
+	je working
+	jmp over
 
-	mWinCheckXCol
+working:
+	mWriteStr works
+
+over:
+	;mWinCheckXCol
 
 	invoke ExitProcess, 0
 main endp
