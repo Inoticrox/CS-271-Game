@@ -116,7 +116,7 @@ ENDM
 
 mPrint_data_indice MACRO indice				;	this prints a single indice from the data array 
 
-	mov AL, data indice
+	mov AL, data + indice
 	call WriteChar
 
 ENDM
@@ -191,11 +191,44 @@ mPrint_data MACRO					;	prints the data array
 	mPrint_data_indice 7
 	mPrint_data_indice 8
 
+ENDM
+
+
+mcheckRows MACRO x_o
+
+	mov ah, x_o
+	mov EAX, 0
+	mov EDX, 0
+
+
+	cmp ah, data + 
+	je hit
+
+	cmp ah, data + 1
+	je hit
+
+	cmp ah, data + 2
+	je hit
+
+		
+	hit: 
+		inc EAX
+		
 
 
 
+
+
+
+
+
+	finish: 
+		mWriteStr win
 
 ENDM
+
+
+
 
 .data
 
@@ -205,25 +238,25 @@ ENDM
 	rowOne		BYTE	" 1 ", 0
 	rowTwo		BYTE	" 2 ", 0
 	rowThree	BYTE	" 3 ", 0
-	space		BYTE	"   ", 0
-
-
+	space		BYTE	"   ", 0	
+	win			BYTE	"	YOU WON!!!!!!	", 10, 0
+	mult		DWORD	?
+	
 .code
 main PROC						;	****************************************
 	
 	mMake_board
 
-	mPlayer_turn 4, 2, 1
-	mPlayer_turn 4, 0, 0
-	;mPlayer_turn 2, 0, 1
+	mPlayer_turn 0, 0, 1
+	mPlayer_turn 0, 2, 1
+	mPlayer_turn 0, 4, 1
+
 
 	
-
 	mPrint_board	
-	
-	;mPlayer_turn 4, 4, 1
 
-	
+	call winCheck
+
 
 
 
@@ -231,6 +264,32 @@ main PROC						;	****************************************
 
 main ENDP						;	****************************************
 
+
+
+
+
+winCheck PROC
+
+	mFill_data
+	mPrint_data
+
+
+
+	mcheckRows "X"
+
+
+
+
+
+
+
+
+
+
+	ret 
+
+
+winCheck ENDP
 
 
 
