@@ -8,6 +8,8 @@ INCLUDELIB C:/Irvine/Irvine32.lib
 .stack 4096
 ExitProcess proto, dwExitCode: dword
 
+MAX_SIZE = 25
+
 mOPrompt MACRO
 	;States it's O's turn
 	mov EDX, OFFSET oTurn
@@ -20,6 +22,26 @@ mOPrompt MACRO
 
 	;Sets inputted column to userCol variable
 	call ReadInt
+
+	;Checks for valid column input
+colCheck:
+	;Checks for non-numbers and negatives
+	cmp EAX, 0
+	jle colWrong
+
+	;Checks for values larger than number of columns
+	cmp EAX, 3
+	jg colWrong
+
+	jmp colRight
+
+colWrong:
+	;Reprompts then checks again
+	mWriteStr colError
+	call Readint
+	jmp colCheck
+
+colRight:
 	mov userCol, EAX
 
 	;Prompts for a row
@@ -28,7 +50,28 @@ mOPrompt MACRO
 
 	;Sets inputted row to userRow variable
 	call ReadInt
+
+	;Checks for valid row input
+rowCheck:
+	;Checks for non-numbers and negatives
+	cmp EAX, 0
+	jle rowWrong
+
+	;Checks for values larger than number of rows
+	cmp EAX, 3
+	jg rowWrong
+
+	jmp rowRight
+
+rowWrong:
+	;Reprompts then checks again
+	mWriteStr rowError
+	call Readint
+	jmp rowCheck
+
+rowRight:
 	mov userRow, EAX
+
 ENDM
 
 mXPrompt MACRO
@@ -43,6 +86,26 @@ mXPrompt MACRO
 
 	;Sets inputted column to userCol variable
 	call ReadInt
+
+	;Checks for valid column input
+colCheck:
+	;Checks for non-numbers and negatives
+	cmp EAX, 0
+	jle colWrong
+
+	;Checks for values larger than number of columns
+	cmp EAX, 3
+	jg colWrong
+
+	jmp colRight
+
+colWrong:
+	;Reprompts then checks again
+	mWriteStr colError
+	call Readint
+	jmp colCheck
+
+colRight:
 	mov userCol, EAX
 
 	;Prompts for a row
@@ -51,46 +114,30 @@ mXPrompt MACRO
 
 	;Sets inputted row to userRow variable
 	call ReadInt
+
+	;Checks for valid row input
+rowCheck:
+	;Checks for non-numbers and negatives
+	cmp EAX, 0
+	jle rowWrong
+
+	;Checks for values larger than number of rows
+	cmp EAX, 3
+	jg rowWrong
+
+	jmp rowRight
+
+rowWrong:
+	;Reprompts then checks again
+	mWriteStr rowError
+	call Readint
+	jmp rowCheck
+
+rowRight:
 	mov userRow, EAX
-ENDM
-
-mWinCheckXCol MACRO
-	mov ESI, 0
-	;ECX is outer loop counter
-	mov ECX, 0
-outerLoop:
-	cmp ECX, 5
-	je done
-	;EBX is inner loop counter
-	mov EBX, 0
-
-innerLoop:
-	mov EDX, OFFSET xChar
-	;This isn't working, do a write in for each ECX and EBX to see if it isn't accessing the right indexes
-	mov EAX, board[ECX][EBX]
-	;Don't think the comparison is working. Need to figure out how to compare strings
-	cmp EAX, EDX
-	je iEqual
-	jmp innerLoopDone
-
-iEqual:
-	mWriteStr works
-	call Crlf
-	inc ESI
-	cmp ESI, 3
-	je done
-	cmp EBX, 5
-	je innerLoopDone
-	inc EBX
-	jmp innerLoop
-
-innerLoopDone:
-	inc ECX
-	jmp outerLoop
-
-done:
 
 ENDM
+
 
 mWriteStr MACRO input
 	push EDX
@@ -99,29 +146,16 @@ mWriteStr MACRO input
 	pop EDX
 ENDM
 
-;XTurn PROC
-	;mXPrompt
-	;mov board[userCol][userRow], xChar
-	;prints board
-	;checks win condition
-
-;XTurn ENDP
-
-;OTurn PROC
-	;mOPrompt
-	;mov board[userCol][userRow], oChar
-	;prints board
-	;checks win condition
-
-;OTurn ENDP
 
 
 .data
-	board DWORD 5 DUP(5 DUP(?))
+	board BYTE 5 DUP(5 DUP(?))
 	xTurn BYTE "It's X's turn.",0
 	oTurn BYTE "It's O's turn.",0
 	colPrompt BYTE "Enter an empty column number: ",0
 	rowPrompt BYTE "Enter an empty row number: ",0
+	colError BYTE "Invalid column entry. Please enter a valid column number: ",0
+	rowError BYTE "Invalid row entry. Please enter a valid row number: ",0
 	userCol DWORD ? 
 	userRow DWORD ? 
 	xChar BYTE "X",0
@@ -131,26 +165,25 @@ ENDM
 .code
 main proc
 	
-	mov EDX, OFFSET xChar
-	mov board[1][0], OFFSET xChar
-	mov board[2][0], EDX
-	mov board[3][0], EDX
-	
-	mov EDX, OFFSET board[1][0]
-	call WriteString
-	mov EDI, OFFSET xChar
-	;call WriteString
-	;mov EBX, xChar
-	cmp EDI, EDX
-	je working
-	jmp over
-
-working:
-	mWriteStr works
-
-over:
-	;mWinCheckXCol
+	call strtXTurn
 
 	invoke ExitProcess, 0
 main endp
+
+strtXTurn PROC
+	mXPrompt
+	;mov board[userCol][userRow], xChar
+	;prints board
+	;checks win condition
+	ret
+strtXTurn ENDP
+
+strtOTurn PROC
+	mOPrompt
+	;mov board[userCol][userRow], oChar
+	;prints board
+	;checks win condition
+	ret
+strtOTurn ENDP
+
 end main
