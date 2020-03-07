@@ -304,154 +304,6 @@ rowRight:
 
 ENDM
 
-;Inserts an X depending on where user requested
-mXInserts
-	cmp userRow, 1
-	je pickRow1
-
-	cmp userRow, 2
-	je pickRow2
-
-	cmp userRow, 3
-	je pickRow 3
-
-pickRow1:
-	jmp row1
-pickRow2:
-	jmp row2
-pickRow3:
-	jmp row3
-
-row1:
-	cmp userCol, 1
-	je pickCol1
-
-	cmp userCol, 2
-	je pickCol2
-
-	cmp userCol, 3
-	je pickCol3
-
-pickCol1:
-	mPlayer_turn 0,0,1
-pickCol2:
-	mPlayer_turn 0,2,1
-pickCol3:
-	mPlayer_turn 0,4,1
-
-row2:
-	cmp userCol, 1
-	je pickCol1
-
-	cmp userCol, 2
-	je pickCol2
-
-	cmp userCol, 3
-	je pickCol3
-
-pickCol1:
-	mPlayer_turn 2,0,1
-pickCol2:
-	mPlayer_turn 2,2,1
-pickCol3:
-	mPlayer_turn 2,4,1
-
-
-row3:
-	cmp userCol, 1
-	je pickCol1
-
-	cmp userCol, 2
-	je pickCol2
-
-	cmp userCol, 3
-	je pickCol3
-
-pickCol1:
-	mPlayer_turn 4,0,1
-pickCol2:
-	mPlayer_turn 4,2,1
-pickCol3:
-	mPlayer_turn 4,4,1
-
-ENDM
-
-;Inserts an O depending on where user requested
-mOInserts
-;First it compares the row against 1 2 3 
-	cmp userRow, 1
-	je pickRow1
-
-	cmp userRow, 2
-	je pickRow2
-
-	cmp userRow, 3
-	je pickRow 3
-
-pickRow1:
-	jmp row1
-pickRow2:
-	jmp row2
-pickRow3:
-	jmp row3
-
-;Then based on the row it jumps to row1, row2, row3
-row1:
-;Then checks the column and jumps to the proper placement
-	cmp userCol, 1
-	je pickCol1
-
-	cmp userCol, 2
-	je pickCol2
-
-	cmp userCol, 3
-	je pickCol3
-
-pickCol1:
-	mPlayer_turn 0,0,0
-pickCol2:
-	mPlayer_turn 0,2,0
-pickCol3:
-	mPlayer_turn 0,4,0
-
-row2:
-	cmp userCol, 1
-	je pickCol1
-
-	cmp userCol, 2
-	je pickCol2
-
-	cmp userCol, 3
-	je pickCol3
-
-pickCol1:
-	mPlayer_turn 2,0,0
-pickCol2:
-	mPlayer_turn 2,2,0
-pickCol3:
-	mPlayer_turn 2,4,0
-
-
-row3:
-	cmp userCol, 1
-	je pickCol1
-
-	cmp userCol, 2
-	je pickCol2
-
-	cmp userCol, 3
-	je pickCol3
-
-pickCol1:
-	mPlayer_turn 4,0,0
-pickCol2:
-	mPlayer_turn 4,2,0
-pickCol3:
-	mPlayer_turn 4,4,0
-
-ENDM
-
-
 mWriteStr MACRO input
 	push EDX
 	mov EDX, OFFSET input
@@ -486,14 +338,8 @@ main proc
 
 	mPrint_Board
 
-	mPlayer_turn 0,0,0
-	mPrint_Board
-
-	;mPlayer_turn 4,0,1
-	;mPrint_Board
-
-	mFill_data
-	mPrint_data
+	call strtXTurn
+;Currently does not work. Keeps hitting a breakpoint
 
 	invoke ExitProcess, 0
 main endp
@@ -501,7 +347,7 @@ main endp
 strtXTurn PROC
 	mXPrompt
 	
-	mPlayer_turn userRow,userCol,1
+	call XInserts
 	mPrint_Board
 	;checks win condition
 	ret
@@ -510,10 +356,170 @@ strtXTurn ENDP
 strtOTurn PROC
 	mOPrompt
 	
-	;mPlayer_turn userRow,userCol,0
-	;mPrint_Board
+	call OInserts
+	mPrint_Board
 	;checks win condition
 	ret
 strtOTurn ENDP
+
+;Inserts an O depending on where user requested
+OInserts PROC
+;First it compares the row against 1 2 3 
+	cmp userRow, 1
+	je pickRow1
+
+	cmp userRow, 2
+	je pickRow2
+
+	cmp userRow, 3
+	je pickRow3
+
+pickRow1:
+	jmp row1
+pickRow2:
+	jmp row2
+pickRow3:
+	jmp row3
+
+;Then based on the row it jumps to row1, row2, row3
+row1:
+;Then checks the column and jumps to the proper placement
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 0,0,0
+
+pickCol2:
+	mPlayer_turn 0,2,0
+
+pickCol3:
+	mPlayer_turn 0,4,0
+
+row2:
+	cmp userCol, 1
+	je pickCol12
+
+	cmp userCol, 2
+	je pickCol22
+
+	cmp userCol, 3
+	je pickCol32
+
+pickCol12:
+	mPlayer_turn 2,0,0
+
+pickCol22:
+	mPlayer_turn 2,2,0
+
+pickCol32:
+	mPlayer_turn 2,4,0
+
+row3:
+	cmp userCol, 1
+	je pickCol13
+
+	cmp userCol, 2
+	je pickCol23
+
+	cmp userCol, 3
+	je pickCol33
+
+pickCol13:
+	mPlayer_turn 4,0,0
+
+pickCol23:
+	mPlayer_turn 4,2,0
+
+pickCol33:
+	mPlayer_turn 4,4,0
+
+OInserts ENDP
+
+;Inserts an X depending on where user requested
+XInserts PROC
+	cmp userRow, 1
+	je pickRow1
+
+	cmp userRow, 2
+	je pickRow2
+
+	cmp userRow, 3
+	je pickRow3
+
+pickRow1:
+	jmp row1
+pickRow2:
+	jmp row2
+pickRow3:
+	jmp row3
+
+row1:
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 0,0,1
+
+pickCol2:
+	mPlayer_turn 0,2,1
+
+pickCol3:
+	mPlayer_turn 0,4,1
+
+row2:
+	cmp userCol, 1
+	je pickCol12
+
+	cmp userCol, 2
+	je pickCol22
+
+	cmp userCol, 3
+	je pickCol32
+
+pickCol12:
+	mPlayer_turn 2,0,1
+
+pickCol22:
+	mPlayer_turn 2,2,1
+
+pickCol32:
+	mPlayer_turn 2,4,1
+
+row3:
+	cmp userCol, 1
+	je pickCol13
+
+	cmp userCol, 2
+	je pickCol23
+
+	cmp userCol, 3
+	je pickCol33
+
+pickCol13:
+	mPlayer_turn 4,0,1
+
+pickCol23:
+	mPlayer_turn 4,2,1
+
+pickCol33:
+	mPlayer_turn 4,4,1
+
+XInserts ENDP
+
+
+
 
 end main
