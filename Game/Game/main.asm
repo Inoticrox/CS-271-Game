@@ -102,7 +102,7 @@ ENDM
 
 mPrint_data_indice MACRO indice				;	this prints a single indice from the data array 
 
-	mov AL, data indice
+	mov AL, data + indice
 	call WriteChar
 
 ENDM
@@ -121,6 +121,7 @@ mPlayer_turn MACRO row, col, X_O
 
 X:
 	mov board + ( row * 5 ) + col, 88
+	
 	jmp done
 O:
 	mov board + ( row * 5 ) + col, 79
@@ -303,6 +304,153 @@ rowRight:
 
 ENDM
 
+;Inserts an X depending on where user requested
+mXInserts
+	cmp userRow, 1
+	je pickRow1
+
+	cmp userRow, 2
+	je pickRow2
+
+	cmp userRow, 3
+	je pickRow 3
+
+pickRow1:
+	jmp row1
+pickRow2:
+	jmp row2
+pickRow3:
+	jmp row3
+
+row1:
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 0,0,1
+pickCol2:
+	mPlayer_turn 0,2,1
+pickCol3:
+	mPlayer_turn 0,4,1
+
+row2:
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 2,0,1
+pickCol2:
+	mPlayer_turn 2,2,1
+pickCol3:
+	mPlayer_turn 2,4,1
+
+
+row3:
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 4,0,1
+pickCol2:
+	mPlayer_turn 4,2,1
+pickCol3:
+	mPlayer_turn 4,4,1
+
+ENDM
+
+;Inserts an O depending on where user requested
+mOInserts
+;First it compares the row against 1 2 3 
+	cmp userRow, 1
+	je pickRow1
+
+	cmp userRow, 2
+	je pickRow2
+
+	cmp userRow, 3
+	je pickRow 3
+
+pickRow1:
+	jmp row1
+pickRow2:
+	jmp row2
+pickRow3:
+	jmp row3
+
+;Then based on the row it jumps to row1, row2, row3
+row1:
+;Then checks the column and jumps to the proper placement
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 0,0,0
+pickCol2:
+	mPlayer_turn 0,2,0
+pickCol3:
+	mPlayer_turn 0,4,0
+
+row2:
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 2,0,0
+pickCol2:
+	mPlayer_turn 2,2,0
+pickCol3:
+	mPlayer_turn 2,4,0
+
+
+row3:
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+pickCol1:
+	mPlayer_turn 4,0,0
+pickCol2:
+	mPlayer_turn 4,2,0
+pickCol3:
+	mPlayer_turn 4,4,0
+
+ENDM
+
 
 mWriteStr MACRO input
 	push EDX
@@ -341,24 +489,29 @@ main proc
 	mPlayer_turn 0,0,0
 	mPrint_Board
 
-	mPlayer_turn 4,0,1
-	mPrint_Board
+	;mPlayer_turn 4,0,1
+	;mPrint_Board
+
+	mFill_data
+	mPrint_data
 
 	invoke ExitProcess, 0
 main endp
 
 strtXTurn PROC
 	mXPrompt
-	;mov board[userCol][userRow], xChar
-	;prints board
+	
+	mPlayer_turn userRow,userCol,1
+	mPrint_Board
 	;checks win condition
 	ret
 strtXTurn ENDP
 
 strtOTurn PROC
 	mOPrompt
-	;mov board[userCol][userRow], oChar
-	;prints board
+	
+	;mPlayer_turn userRow,userCol,0
+	;mPrint_Board
 	;checks win condition
 	ret
 strtOTurn ENDP
