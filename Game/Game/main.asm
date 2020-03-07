@@ -339,7 +339,7 @@ main proc
 	mPrint_Board
 
 	call strtXTurn
-;Currently does not work. Keeps hitting a breakpoint
+	call strtOTurn
 
 	invoke ExitProcess, 0
 main endp
@@ -357,6 +357,7 @@ strtOTurn PROC
 	mOPrompt
 	
 	call OInserts
+
 	mPrint_Board
 	;checks win condition
 	ret
@@ -395,12 +396,15 @@ row1:
 
 pickCol1:
 	mPlayer_turn 0,0,0
+	jmp done
 
 pickCol2:
 	mPlayer_turn 0,2,0
+	jmp done
 
 pickCol3:
 	mPlayer_turn 0,4,0
+	jmp done
 
 row2:
 	cmp userCol, 1
@@ -414,12 +418,15 @@ row2:
 
 pickCol12:
 	mPlayer_turn 2,0,0
+	jmp done
 
 pickCol22:
 	mPlayer_turn 2,2,0
+	jmp done
 
 pickCol32:
 	mPlayer_turn 2,4,0
+	jmp done
 
 row3:
 	cmp userCol, 1
@@ -433,13 +440,19 @@ row3:
 
 pickCol13:
 	mPlayer_turn 4,0,0
+	jmp done
 
 pickCol23:
 	mPlayer_turn 4,2,0
+	jmp done
 
 pickCol33:
 	mPlayer_turn 4,4,0
+	jmp done
 
+done:
+
+ret
 OInserts ENDP
 
 ;Inserts an X depending on where user requested
@@ -472,12 +485,15 @@ row1:
 
 pickCol1:
 	mPlayer_turn 0,0,1
+	jmp done
 
 pickCol2:
 	mPlayer_turn 0,2,1
+	jmp done
 
 pickCol3:
 	mPlayer_turn 0,4,1
+	jmp done
 
 row2:
 	cmp userCol, 1
@@ -491,12 +507,15 @@ row2:
 
 pickCol12:
 	mPlayer_turn 2,0,1
+	jmp done
 
 pickCol22:
 	mPlayer_turn 2,2,1
+	jmp done
 
 pickCol32:
 	mPlayer_turn 2,4,1
+	jmp done
 
 row3:
 	cmp userCol, 1
@@ -510,13 +529,19 @@ row3:
 
 pickCol13:
 	mPlayer_turn 4,0,1
+	jmp done
 
 pickCol23:
 	mPlayer_turn 4,2,1
+	jmp done
 
 pickCol33:
 	mPlayer_turn 4,4,1
+	jmp done
 
+done:
+
+ret
 XInserts ENDP
 
 
