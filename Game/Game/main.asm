@@ -341,6 +341,8 @@ main proc
 	call strtXTurn
 	call strtOTurn
 
+	
+
 	invoke ExitProcess, 0
 main endp
 
@@ -357,7 +359,6 @@ strtOTurn PROC
 	mOPrompt
 	
 	call OInserts
-
 	mPrint_Board
 	;checks win condition
 	ret
