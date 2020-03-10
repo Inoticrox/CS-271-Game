@@ -4,7 +4,7 @@ INCLUDE C:/Irvine/Irvine32.inc
 INCLUDELIB C:/Irvine/Irvine32.lib
 
 .386
-;.model flat, stdcall
+.model flat, stdcall
 .stack 4096
 ExitProcess proto, dwExitCode: dword
 
@@ -12,13 +12,13 @@ MAX_SIZE = 25
 
 
 mOPrompt MACRO
-	
-	mov EDX, OFFSET oTurn					;	States it's O's turn
+	;States it's O's turn
+	mov EDX, OFFSET oTurn
 	call WriteString
 	call Crlf
 
-	
-	mov EDX, OFFSET colPrompt				;	Prompts for a column
+	;Prompts for a column
+	mov EDX, OFFSET colPrompt
 	call WriteString
 
 ENDM
@@ -44,10 +44,10 @@ mOddRows MACRO row
 
 ENDM
 
+;this should fill the board matrix with the empty board. 
+mMake_Board MACRO
 
-mMake_Board MACRO					;	this should fill the board matrix with the empty board. 
-
-	mov winCond, 1					;	resets winCond for iterative play
+	mov winCond, 1
 	mEvenRows 32, 32, 32, 0
 	mOddRows 1
 	mEvenRows 32, 32, 32, 2
@@ -94,7 +94,7 @@ mPrint_Board MACRO
 
 ENDM
 
-mPrint_indice MACRO col, row				;	prints a single indice from the board array
+mPrint_indice MACRO col, row 
 
 	mov AL, board + col + row
 	call WriteChar
@@ -108,7 +108,8 @@ mPrint_data_indice MACRO indice				;	this prints a single indice from the data a
 
 ENDM
 
-mPlayer_turn MACRO row, col, X_O			;	a single move, places an X or O
+;a single move, places an X or O
+mPlayer_turn MACRO row, col, X_O
 
 	LOCAL O
 	LOCAL X
@@ -304,7 +305,7 @@ rowRight:
 
 ENDM
 
-mWriteStr MACRO input						;	simple macro to write strings to console 
+mWriteStr MACRO input
 	push EDX
 	mov EDX, OFFSET input
 	call WriteString
@@ -413,7 +414,6 @@ mcheckCols_all MACRO
 
 ENDM
 
-
 mCheckDiag MACRO x_o
 	
 	LOCAL ending
@@ -452,8 +452,6 @@ mCheckDiag MACRO x_o
 		je win
 		jmp ending 
 
-
-
 	win: 
 		mov winCond, 0
 		mov winplayer, x_o 
@@ -470,6 +468,47 @@ mcheckDiag_both MACRO
 
 ENDM
 
+mTiecheck MACRO 
+
+	mov al, data
+	cmp al, data + 1
+	jne ending
+
+	mov al, data + 1
+	cmp al, data + 2
+	jne ending
+
+	mov al, data + 2
+	cmp al, data + 3
+	jne ending
+
+	mov al, data + 3
+	cmp al, data + 4
+	jne ending
+
+	mov al, data + 4
+	cmp al, data + 5
+	jne ending
+
+	mov al, data + 5
+	cmp al, data + 6
+	jne ending
+
+	mov al, data + 6
+	cmp al, data + 7
+	jne ending
+
+	mov al, data + 7
+	cmp al, data + 8
+	jne ending
+
+	mov winCond, 2
+
+
+	ending:
+
+
+ENDM
 
 
 .data
@@ -491,8 +530,8 @@ ENDM
 
 
 
-
-
+	xStarts		DWORD	0
+	oStarts		DWORD	0
 	userCol		DWORD	? 
 	userRow		DWORD	? 
 	winCond		DWORD	1
@@ -502,40 +541,22 @@ ENDM
 	works		BYTE	"Works!",0
 
 .code
-
-
-
-main proc						;	****************************************************************************
+main proc					;	*****************************************************************
 	
 	mMake_board
 	mPrint_Board
 
-	call strtOTurn
-	call strtOTurn
-	call strtOTurn
-
-	mFill_data
-
-	mcheckRows_all
-	mcheckCols_all
-	mCheckDiag_both
-
-	mov EAX, winCond 
-	call Crlf
-	call WriteInt
-
+	call gamePlay
 
 	invoke ExitProcess, 0
-main endp						;	****************************************************************************
+main endp					;	*****************************************************************
 
-
-
-
-strtXTurn PROC					;	asks player X for row/col 
+strtXTurn PROC
 	mXPrompt
 	
 	call XInserts
-	mPrint_Board				;	checks win condition
+	mPrint_Board
+	;checks win condition
 	ret
 strtXTurn ENDP
 
@@ -543,17 +564,14 @@ strtOTurn PROC
 	mOPrompt
 	
 	call OInserts
-
 	mPrint_Board
 	;checks win condition
 	ret
 strtOTurn ENDP
 
-
-
-OInserts PROC					;	Inserts an O depending on where user requested
-	
-								;	First it compares the row against 1 2 3 
+;Inserts an O depending on where user requested
+OInserts PROC
+;First it compares the row against 1 2 3 
 	cmp userRow, 1
 	je pickRow1
 
@@ -643,10 +661,8 @@ done:
 ret
 OInserts ENDP
 
-
-
-XInserts PROC					;	Inserts an X depending on where user requested
-
+;Inserts an X depending on where user requested
+XInserts PROC
 	cmp userRow, 1
 	je pickRow1
 
@@ -734,8 +750,33 @@ done:
 ret
 XInserts ENDP
 
+;Random turn procedure which picks either 1 or 2 randomly and then calls the x or o start turn procedure
+randomTurn PROC
+	call Randomize
+	mov oStarts, 0
+	mov xStarts, 0
+	
+	mov EAX, 2
+	call RandomRange
+	add EAX, 1
+	
+	cmp EAX, 1
+	je xPlayer
+	cmp EAX, 2
+	je oPlayer
+	jmp done
 
-
+xPlayer:
+	mov xStarts, 1
+	call strtXTurn
+	jmp done
+oPlayer:
+	mov oStarts, 1
+	call strtOTurn
+	jmp done
+done:
+	ret
+randomTurn ENDP
 
 winCheck PROC
 
@@ -743,50 +784,51 @@ winCheck PROC
 	mcheckCols_all
 	mcheckDiag_both
 
-
-
-
-
-
-
-
 	ret
 
-ENDP
+winCheck ENDP
 
-
-
-
-
-
-gamePLay PROC
+gamePlay PROC
 	
+	call randomTurn
+	cmp xStarts, 1
+	je gameloop1
+	cmp oStarts, 1
+	je gameloop2
+	jmp done
 
-	gameloop:
-		call strtOTurn
-		call strtXTurn
+gameloop1:
+	call strtOTurn
+	call winCheck
+	cmp winCond, 0
+	je done
 
+	call strtXTurn
+	call winCheck
+	cmp winCond, 0
+	je done
 
+	loop gameloop1
+	jmp done
 
-	loop gameloop
+gameloop2:
+	call strtXTurn
+	call winCheck
+	cmp winCond, 0
+	je done
 
+	call strtOTurn
+	call winCheck
+	cmp winCond, 0
+	je done
 
+	loop gameloop2
 
-
-
-
-
+done:
 
 	ret
 
 gamePlay ENDP
-
-
-
-
-
-
-
 
 
 end main
