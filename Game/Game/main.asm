@@ -56,6 +56,7 @@ mMake_Board MACRO
 	
 ENDM
 
+;prints out the rows
 mPrintRow MACRO	row
 
 	mPrint_indice 0, (row * 5)
@@ -94,6 +95,7 @@ mPrint_Board MACRO
 
 ENDM
 
+;Prints a single indice of a column and row
 mPrint_indice MACRO col, row 
 
 	mov AL, board + col + row
@@ -305,6 +307,7 @@ rowRight:
 
 ENDM
 
+;Write String macro for ease of use
 mWriteStr MACRO input
 	push EDX
 	mov EDX, OFFSET input
@@ -362,6 +365,7 @@ mcheckRows_all MACRO						;	checks all of the rows for the win cond
 
 ENDM
 
+; Checks if a singel column has won
 mcolCheck MACRO col, x_o
 
 	LOCAL rowOne
@@ -400,20 +404,22 @@ mcolCheck MACRO col, x_o
 
 ENDM
 
+;Checks all columns for win condition
 mcheckCols_all MACRO
 
 	
-	mcolCheck 0, 79
+	mcolCheck 0, 79		; Checks all columns for X
 	mcolCheck 1, 79
 	mcolCheck 2, 79
 
-	mcolCheck 0, 88
+	mcolCheck 0, 88		; Checks all columns for O
 	mcolCheck 1, 88
 	mcolCheck 2, 88
 
 
 ENDM
 
+;Checks the diagonal directions for win condition by specific spots on the board based on an X or O input
 mCheckDiag MACRO x_o
 	
 	LOCAL ending
@@ -461,6 +467,7 @@ mCheckDiag MACRO x_o
 
 ENDM
 
+;Checks both X and O for the diagonal spots
 mcheckDiag_both MACRO
 
 	mcheckDiag 79
@@ -505,53 +512,38 @@ main proc
 	mMake_board
 	mPrint_Board
 
-	call strtOTurn
-	call strtOTurn
-	call strtOTurn
-
-	mFill_data
-
-	mcheckRows_all
-	mcheckCols_all
-	mCheckDiag_both
-
-	mov EAX, winCond
-	call Crlf
-	call WriteInt
-
-	;mMake_board
-
-	;mPrint_Board
-	
-	;call randomTurn
-	
-	;call strtXTurn
-	;call strtOTurn
+	call gamePlay
 
 	invoke ExitProcess, 0
 main endp
 
+;Starts X's turn by calling for user input on the board, printing the board, filling out the data, and then checking the win condition
 strtXTurn PROC
 	mXPrompt
 	
 	call XInserts
 	mPrint_Board
-	;checks win condition
+	mFill_data
+	call winCheck
+
 	ret
 strtXTurn ENDP
 
+;Starts O's turn by calling for user input on the board, printing the board, filling out the data, and then checking the win condition
 strtOTurn PROC
 	mOPrompt
 	
 	call OInserts
 	mPrint_Board
-	;checks win condition
+	mFill_data
+	call winCheck
+
 	ret
 strtOTurn ENDP
 
 ;Inserts an O depending on where user requested
 OInserts PROC
-;First it compares the row against 1 2 3 
+;First it compares the row entered against 1, 2, 3 
 	cmp userRow, 1
 	je pickRow1
 
@@ -561,6 +553,7 @@ OInserts PROC
 	cmp userRow, 3
 	je pickRow3
 
+;Then based on the row it jumps to row1, row2, row3
 pickRow1:
 	jmp row1
 pickRow2:
@@ -568,7 +561,6 @@ pickRow2:
 pickRow3:
 	jmp row3
 
-;Then based on the row it jumps to row1, row2, row3
 row1:
 ;Then checks the column and jumps to the proper placement
 	cmp userCol, 1
@@ -580,14 +572,17 @@ row1:
 	cmp userCol, 3
 	je pickCol3
 
+;Column 1, Row 1
 pickCol1:
 	mPlayer_turn 0,0,0
 	jmp done
 
+;Column 2, Row 1
 pickCol2:
 	mPlayer_turn 0,2,0
 	jmp done
 
+;Column 3, Row 1
 pickCol3:
 	mPlayer_turn 0,4,0
 	jmp done
@@ -602,14 +597,17 @@ row2:
 	cmp userCol, 3
 	je pickCol32
 
+;Column 1, Row 2
 pickCol12:
 	mPlayer_turn 2,0,0
 	jmp done
 
+;Column 2, Row 2
 pickCol22:
 	mPlayer_turn 2,2,0
 	jmp done
 
+;Column 3, Row 2
 pickCol32:
 	mPlayer_turn 2,4,0
 	jmp done
@@ -624,14 +622,17 @@ row3:
 	cmp userCol, 3
 	je pickCol33
 
+;Column 1, Row 3
 pickCol13:
 	mPlayer_turn 4,0,0
 	jmp done
 
+;Column 2, Row 3
 pickCol23:
 	mPlayer_turn 4,2,0
 	jmp done
 
+;Column 3, Row 3
 pickCol33:
 	mPlayer_turn 4,4,0
 	jmp done
@@ -643,6 +644,7 @@ OInserts ENDP
 
 ;Inserts an X depending on where user requested
 XInserts PROC
+;First it compares the row entered against 1, 2, 3 
 	cmp userRow, 1
 	je pickRow1
 
@@ -652,6 +654,7 @@ XInserts PROC
 	cmp userRow, 3
 	je pickRow3
 
+;Then based on the row it jumps to row1, row2, row3
 pickRow1:
 	jmp row1
 pickRow2:
@@ -660,6 +663,7 @@ pickRow3:
 	jmp row3
 
 row1:
+;Then checks the column and jumps to the proper placement
 	cmp userCol, 1
 	je pickCol1
 
@@ -669,14 +673,17 @@ row1:
 	cmp userCol, 3
 	je pickCol3
 
+;Column 1, Row 1
 pickCol1:
 	mPlayer_turn 0,0,1
 	jmp done
 
+;Column 2, Row 1
 pickCol2:
 	mPlayer_turn 0,2,1
 	jmp done
 
+;Column 3, Row 1
 pickCol3:
 	mPlayer_turn 0,4,1
 	jmp done
@@ -691,14 +698,17 @@ row2:
 	cmp userCol, 3
 	je pickCol32
 
+;Column 1, Row 2
 pickCol12:
 	mPlayer_turn 2,0,1
 	jmp done
 
+;Column 2, Row 2
 pickCol22:
 	mPlayer_turn 2,2,1
 	jmp done
 
+;Column 3, Row 2
 pickCol32:
 	mPlayer_turn 2,4,1
 	jmp done
@@ -713,14 +723,17 @@ row3:
 	cmp userCol, 3
 	je pickCol33
 
+;Column 1, Row 3
 pickCol13:
 	mPlayer_turn 4,0,1
 	jmp done
 
+;Column 2, Row 3
 pickCol23:
 	mPlayer_turn 4,2,1
 	jmp done
 
+;Column 3, Row 3
 pickCol33:
 	mPlayer_turn 4,4,1
 	jmp done
@@ -758,6 +771,8 @@ done:
 	ret
 randomTurn ENDP
 
+;Runs all the win condition chekcing macros
+;Checks Rows, then Columns, then Diagional positions
 winCheck PROC
 
 	mCheckRows_all
@@ -768,7 +783,10 @@ winCheck PROC
 
 winCheck ENDP
 
-gamePLay PROC
+;The main gameplay procedure
+;Runs the random turn first, then has 2 loops based on which player started first
+;Calls the next players turn then continues to alternate turns, checking if a player has won after each turn
+gamePlay PROC
 	
 	call randomTurn
 	cmp xStarts, 1
@@ -776,14 +794,30 @@ gamePLay PROC
 	cmp oStarts, 1
 	je gameloop2
 	jmp done
+
+;If X started first
 gameloop1:
 	call strtOTurn
+	cmp winCond, 0
+	je done
+
 	call strtXTurn
+	cmp winCond, 0
+	je done
+
 	loop gameloop1
 	jmp done
+
+;If O started first
 gameloop2:
 	call strtXTurn
+	cmp winCond, 0
+	je done
+
 	call strtOTurn
+	cmp winCond, 0
+	je done
+
 	loop gameloop2
 
 done:
