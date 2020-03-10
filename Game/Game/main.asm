@@ -337,9 +337,11 @@ main proc
 	mMake_board
 
 	mPrint_Board
-
-	call strtXTurn
-	call strtOTurn
+	
+	call randomTurn
+	
+	;call strtXTurn
+	;call strtOTurn
 
 	
 
@@ -545,6 +547,29 @@ done:
 ret
 XInserts ENDP
 
+;Random turn procedure which picks either 1 or 2 randomly and then calls the x or o start turn procedure
+randomTurn PROC
+	call Randomize
+	
+	mov EAX, 2
+	call RandomRange
+	add EAX, 1
+	
+	cmp EAX, 1
+	je xPlayer
+	cmp EAX, 2
+	je oPlayer
+	jmp done
+
+xPlayer:
+	call strtXTurn
+	jmp done
+oPlayer:
+	call strtOTurn
+	jmp done
+done:
+	ret
+randomTurn ENDP
 
 
 
