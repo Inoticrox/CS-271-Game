@@ -47,6 +47,7 @@ ENDM
 ;this should fill the board matrix with the empty board. 
 mMake_Board MACRO
 
+	mov winCond, 1
 	mEvenRows 32, 32, 32, 0
 	mOddRows 1
 	mEvenRows 32, 32, 32, 2
@@ -311,6 +312,164 @@ mWriteStr MACRO input
 	pop EDX
 ENDM
 
+mRowcheck MACRO	row, x_o					;	checks if a single row has been won 
+	
+	LOCAL colOne
+	LOCAL colTwo
+	LOCAL colThree
+	LOCAL win
+	LOCAL ending
+
+	mov al, x_o
+
+	colOne:
+		cmp al, data + (row * 3) + 0
+		je colTwo
+		jmp ending
+
+	colTwo:
+		cmp al, data + (row * 3) + 1
+		je colThree
+		jmp ending
+
+
+	colThree:
+		cmp al, data + (row * 3) + 2
+		je win
+		jmp ending
+
+
+	win:
+		mov winCond, 0
+		mov winplayer, x_o
+
+	ending:
+
+
+ENDM
+
+mcheckRows_all MACRO						;	checks all of the rows for the win cond
+
+	mRowcheck 0, 88						;	checks all rows for X
+	mRowcheck 1, 88
+	mRowcheck 2, 88
+
+
+	mRowcheck 0, 79						;	checks all rows for O
+	mRowcheck 1, 79
+	mRowcheck 2, 79
+
+
+ENDM
+
+mcolCheck MACRO col, x_o
+
+	LOCAL rowOne
+	LOCAL rowTwo
+	LOCAL rowThree
+	LOCAL win
+	LOCAL ending
+
+
+	mov al, x_o
+
+
+	rowOne:
+		cmp al, data + col
+		je rowTwo
+		jmp ending
+
+	rowTwo:
+		cmp al, data + col + 3
+		je rowThree
+		jmp ending
+
+
+	rowThree:
+		cmp al, data + col + 6
+		je win
+		jmp ending
+
+
+	win:
+	mov winCond, 0
+	mov winplayer, x_o
+
+	ending:
+
+
+ENDM
+
+mcheckCols_all MACRO
+
+	
+	mcolCheck 0, 79
+	mcolCheck 1, 79
+	mcolCheck 2, 79
+
+	mcolCheck 0, 88
+	mcolCheck 1, 88
+	mcolCheck 2, 88
+
+
+ENDM
+
+mCheckDiag MACRO x_o
+	
+	LOCAL ending
+	LOCAL win
+	LOCAL spotOne
+	LOCAL spotTwo 
+	LOCAL spotThree
+	LOCAL spotFour
+	LOCAL spotFive
+
+	mov al, x_o
+
+
+	spotOne: 
+		cmp al, data
+		je spotTwo
+		jmp ending
+
+	spotTwo: 
+		cmp al, data + 4
+		je spotThree
+		jmp ending
+
+	spotThree: 
+		cmp al, data + 8
+		je win
+		jmp ending
+
+	spotFour:
+		cmp al, data + 2
+		je spotFive
+		jmp ending 
+
+	spotFive: 
+		cmp al, data + 6 
+		je win
+		jmp ending 
+
+	win: 
+		mov winCond, 0
+		mov winplayer, x_o 
+
+
+	ending: 
+
+ENDM
+
+mcheckDiag_both MACRO
+
+	mcheckDiag 79
+	mcheckDiag 88
+
+ENDM
+
+
+
 .data
 	board		BYTE	5 DUP(5 DUP(?))
 	data		BYTE	9 DUP (?)
@@ -319,14 +478,23 @@ ENDM
 	rowTwo		BYTE	" 2 ", 0
 	rowThree	BYTE	" 3 ", 0
 	space		BYTE	"   ", 0
-	xTurn		BYTE	"It's X's turn.",0
-	oTurn		BYTE	"It's O's turn.",0
-	colPrompt	BYTE	"Enter an empty column number: ",0
-	rowPrompt	BYTE	"Enter an empty row number: ",0
-	colError	BYTE	"Invalid column entry. Please enter a valid column number: ",0
-	rowError	BYTE	"Invalid row entry. Please enter a valid row number: ",0
+	xTurn		BYTE	"It's X's turn.", 0
+	oTurn		BYTE	"It's O's turn.", 0
+	colPrompt	BYTE	"Enter an empty column number: ", 0
+	rowPrompt	BYTE	"Enter an empty row number: ", 0
+	colError	BYTE	"Invalid column entry. Please enter a valid column number: ", 0
+	rowError	BYTE	"Invalid row entry. Please enter a valid row number: ", 0
+	welcome		BYTE	" Welcome to tic tac toe!", 10, 0
+	progby		BYTE	" Programmed by Hugh MacWilliams and Michael Carris Jr. ", 10, 0
+
+
+
+	xStarts		DWORD	0
+	oStarts		DWORD	0
 	userCol		DWORD	? 
 	userRow		DWORD	? 
+	winCond		DWORD	1
+	winplayer	BYTE	?
 	xChar		BYTE	"X",0
 	oChar		BYTE	"O",0
 	works		BYTE	"Works!",0
@@ -335,15 +503,30 @@ ENDM
 main proc
 	
 	mMake_board
-
 	mPrint_Board
+
+	call strtOTurn
+	call strtOTurn
+	call strtOTurn
+
+	mFill_data
+
+	mcheckRows_all
+	mcheckCols_all
+	mCheckDiag_both
+
+	mov EAX, winCond
+	call Crlf
+	call WriteInt
+
+	;mMake_board
+
+	;mPrint_Board
 	
-	call randomTurn
+	;call randomTurn
 	
 	;call strtXTurn
 	;call strtOTurn
-
-	
 
 	invoke ExitProcess, 0
 main endp
@@ -550,6 +733,8 @@ XInserts ENDP
 ;Random turn procedure which picks either 1 or 2 randomly and then calls the x or o start turn procedure
 randomTurn PROC
 	call Randomize
+	mov oStarts, 0
+	mov xStarts, 0
 	
 	mov EAX, 2
 	call RandomRange
@@ -562,15 +747,50 @@ randomTurn PROC
 	jmp done
 
 xPlayer:
+	mov xStarts, 1
 	call strtXTurn
 	jmp done
 oPlayer:
+	mov oStarts, 1
 	call strtOTurn
 	jmp done
 done:
 	ret
 randomTurn ENDP
 
+winCheck PROC
+
+	mCheckRows_all
+	mcheckCols_all
+	mcheckDiag_both
+
+	ret
+
+winCheck ENDP
+
+gamePLay PROC
+	
+	call randomTurn
+	cmp xStarts, 1
+	je gameloop1
+	cmp oStarts, 1
+	je gameloop2
+	jmp done
+gameloop1:
+	call strtOTurn
+	call strtXTurn
+	loop gameloop1
+	jmp done
+gameloop2:
+	call strtXTurn
+	call strtOTurn
+	loop gameloop2
+
+done:
+
+	ret
+
+gamePlay ENDP
 
 
 end main
