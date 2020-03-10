@@ -1,5 +1,11 @@
 TITLE TicTacToe (main.asm)
 
+;Author: Michael Carris and Hugh MacWilliams
+;Course: CS271		Date: 3/9/20
+;Description: This program will run the classic game TicTacToe! It prints out a board and randomly starts either X or O. It then asks
+;			  the player for input. It then places the input on the board and reprints it with the new input. It finally then repeats
+;			  until a player has gotten 3 in a row on the board. It then states which player has won and then quits.
+
 INCLUDE C:/Irvine/Irvine32.inc
 INCLUDELIB C:/Irvine/Irvine32.lib
 
