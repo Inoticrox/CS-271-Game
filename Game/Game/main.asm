@@ -470,40 +470,32 @@ ENDM
 
 mTiecheck MACRO 
 
-	mov al, data
+	mov al, " "
+	cmp al, data
+	je ending
+
 	cmp al, data + 1
-	jne ending
+	je ending
 
-	mov al, data + 1
-	cmp al, data + 2
-	jne ending
-
-	mov al, data + 2
 	cmp al, data + 3
-	jne ending
+	je ending
 
-	mov al, data + 3
 	cmp al, data + 4
-	jne ending
+	je ending
 
-	mov al, data + 4
 	cmp al, data + 5
-	jne ending
+	je ending
 
-	mov al, data + 5
 	cmp al, data + 6
-	jne ending
+	je ending
 
-	mov al, data + 6
 	cmp al, data + 7
-	jne ending
+	je ending
 
-	mov al, data + 7
 	cmp al, data + 8
-	jne ending
+	je ending
 
 	mov winCond, 2
-
 
 	ending:
 
@@ -513,7 +505,7 @@ ENDM
 
 .data
 	board		BYTE	5 DUP(5 DUP(?))
-	data		BYTE	9 DUP (?)
+	data		BYTE	9 DUP ("p")
 	cols		BYTE	"   1 2 3", 10, 0
 	rowOne		BYTE	" 1 ", 0
 	rowTwo		BYTE	" 2 ", 0
@@ -545,7 +537,7 @@ main proc					;	****************************************************************
 	
 	mMake_board
 	mPrint_Board
-
+	
 	call gamePlay
 
 	invoke ExitProcess, 0
@@ -747,7 +739,7 @@ pickCol33:
 
 done:
 
-ret
+	ret
 XInserts ENDP
 
 ;Random turn procedure which picks either 1 or 2 randomly and then calls the x or o start turn procedure
