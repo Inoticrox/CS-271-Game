@@ -179,6 +179,13 @@ mPrint_data MACRO					;	prints the data array
 ENDM
 
 mOPrompt MACRO
+	LOCAL colCheck
+	LOCAL colWrong
+	LOCAL colRight
+	LOCAL rowCheck
+	LOCAL rowWrong
+	LOCAL rowRight
+	
 	;States it's O's turn
 	mov EDX, OFFSET oTurn
 	call WriteString
@@ -244,6 +251,13 @@ rowRight:
 ENDM
 
 mXPrompt MACRO
+	LOCAL colCheck
+	LOCAL colWrong
+	LOCAL colRight
+	LOCAL rowCheck
+	LOCAL rowWrong
+	LOCAL rowRight
+
 	;States it's X's turn
 	mov EDX, OFFSET xTurn
 	call WriteString
@@ -345,6 +359,7 @@ mRowcheck MACRO	row, x_o					;	checks if a single row has been won
 	win:
 		mov winCond, 0
 		mov winplayer, x_o
+		mPrintWinMessage
 
 	ending:
 
@@ -365,7 +380,7 @@ mcheckRows_all MACRO						;	checks all of the rows for the win cond
 
 ENDM
 
-; Checks if a singel column has won
+; Checks if a single column has won
 mcolCheck MACRO col, x_o
 
 	LOCAL rowOne
@@ -398,6 +413,7 @@ mcolCheck MACRO col, x_o
 	win:
 	mov winCond, 0
 	mov winplayer, x_o
+	mPrintWinMessage
 
 	ending:
 
@@ -461,7 +477,7 @@ mCheckDiag MACRO x_o
 	win: 
 		mov winCond, 0
 		mov winplayer, x_o 
-
+		mPrintWinMessage
 
 	ending: 
 
@@ -475,7 +491,96 @@ mcheckDiag_both MACRO
 
 ENDM
 
+;Checks to see if the entire data array is full and no other win condition has been checked
+mTiecheck MACRO 
+	
+	LOCAL ending
 
+	mov al, " "
+	cmp al, data
+	je ending
+
+	cmp al, data + 1
+	je ending
+
+	cmp al, data + 2
+	je ending
+
+	cmp al, data + 3
+	je ending
+
+	cmp al, data + 4
+	je ending
+
+	cmp al, data + 5
+	je ending
+
+	cmp al, data + 6
+	je ending
+
+	cmp al, data + 7
+	je ending
+
+	cmp al, data + 8
+	je ending
+
+	mov winCond, 2
+	mPrintWinMessage
+ending:
+
+ENDM
+
+;Prints out the welcome and program message
+mIntro MACRO
+	mWriteStr welcome
+	mWriteStr progby
+
+ENDM
+
+;Prints out a win message depending on which player won or if it was a tie
+mPrintWinMessage MACRO
+	
+	LOCAL xWins
+	LOCAL oWins
+	LOCAL tieWins
+	LOCAL done
+
+	cmp winCond, 2
+	je tieWins
+	cmp winplayer, 88
+	je xWins
+	cmp winplayer, 79
+	je oWins
+
+xWins:
+	mWriteStr xWin
+	jmp done
+	
+oWins:
+	mWriteStr oWin
+	jmp done
+
+tieWins:
+	mWriteStr tieWin
+
+done:
+
+ENDM
+
+mEmptyCheck MACRO row, col
+	
+	LOCAL notEqual
+	LOCAL ending
+
+	mov al, " "
+	cmp al, data + ( (userRow - 1) * 3 ) + (userCol - 1)
+	je ending
+	
+	mWriteStr error1
+
+ending:
+	
+ENDM
 
 .data
 	board		BYTE	5 DUP(5 DUP(?))
@@ -487,10 +592,14 @@ ENDM
 	space		BYTE	"   ", 0
 	xTurn		BYTE	"It's X's turn.", 0
 	oTurn		BYTE	"It's O's turn.", 0
+	xWin		BYTE	"Player X Wins!",0
+	oWin		BYTE	"Player O Wins!",0
+	tieWin		BYTE	"It's a tie!",0
 	colPrompt	BYTE	"Enter an empty column number: ", 0
 	rowPrompt	BYTE	"Enter an empty row number: ", 0
-	colError	BYTE	"Invalid column entry. Please enter a valid column number: ", 0
-	rowError	BYTE	"Invalid row entry. Please enter a valid row number: ", 0
+	colError	BYTE	"Invalid column entry. Please enter a valid column number: ",0
+	rowError	BYTE	"Invalid row entry. Please enter a valid row number: ",0
+	error1		BYTE	"Invalid entry, please enter again.",0
 	welcome		BYTE	" Welcome to tic tac toe!", 10, 0
 	progby		BYTE	" Programmed by Hugh MacWilliams and Michael Carris Jr. ", 10, 0
 
@@ -500,6 +609,7 @@ ENDM
 	oStarts		DWORD	0
 	userCol		DWORD	? 
 	userRow		DWORD	? 
+	whosTurn	DWORD	?
 	winCond		DWORD	1
 	winplayer	BYTE	?
 	xChar		BYTE	"X",0
@@ -508,6 +618,8 @@ ENDM
 
 .code
 main proc
+	
+	mIntro
 	
 	mMake_board
 	mPrint_Board
@@ -519,6 +631,7 @@ main endp
 
 ;Starts X's turn by calling for user input on the board, printing the board, filling out the data, and then checking the win condition
 strtXTurn PROC
+	mov whosTurn, 0
 	mXPrompt
 	
 	call XInserts
@@ -531,6 +644,7 @@ strtXTurn ENDP
 
 ;Starts O's turn by calling for user input on the board, printing the board, filling out the data, and then checking the win condition
 strtOTurn PROC
+	mov whosTurn, 1
 	mOPrompt
 	
 	call OInserts
@@ -544,6 +658,10 @@ strtOTurn ENDP
 ;Inserts an O depending on where user requested
 OInserts PROC
 ;First it compares the row entered against 1, 2, 3 
+
+;Checks if user's row and column is empty
+	;call emptyCheck
+
 	cmp userRow, 1
 	je pickRow1
 
@@ -645,6 +763,10 @@ OInserts ENDP
 ;Inserts an X depending on where user requested
 XInserts PROC
 ;First it compares the row entered against 1, 2, 3 
+
+;Checks if user's row and column is empty
+	;call emptyCheck
+
 	cmp userRow, 1
 	je pickRow1
 
@@ -772,15 +894,15 @@ done:
 randomTurn ENDP
 
 ;Runs all the win condition chekcing macros
-;Checks Rows, then Columns, then Diagional positions
+;Checks Rows, then Columns, then Diagional positions, finally it checks if there is a tie on the board
 winCheck PROC
 
 	mCheckRows_all
 	mcheckCols_all
 	mcheckDiag_both
+	mTiecheck
 
 	ret
-
 winCheck ENDP
 
 ;The main gameplay procedure
@@ -800,9 +922,13 @@ gameloop1:
 	call strtOTurn
 	cmp winCond, 0
 	je done
+	cmp winCond, 2
+	je done
 
 	call strtXTurn
 	cmp winCond, 0
+	je done
+	cmp winCond, 2
 	je done
 
 	loop gameloop1
@@ -813,9 +939,13 @@ gameloop2:
 	call strtXTurn
 	cmp winCond, 0
 	je done
-
+	cmp winCond, 2
+	je done
+	
 	call strtOTurn
 	cmp winCond, 0
+	je done
+	cmp winCond, 2
 	je done
 
 	loop gameloop2
@@ -826,5 +956,137 @@ done:
 
 gamePlay ENDP
 
+;!!!!!DOES NOT FUNCTION PROPERLY!!!!!
+COMMENT @
+;It should compare the user's specified position to a " " and then error if it's not a space.
+;It does not, instead it won't allow you to enter anything in at all
+
+;Checks if user's row and column is empty
+emptyCheck PROC
+;First it compares the row entered against 1, 2, 3 
+	mov al, " "
+start:
+
+	cmp userRow, 1
+	je pickRow1
+
+	cmp userRow, 2
+	je pickRow2
+
+	cmp userRow, 3
+	je pickRow3
+
+;Then based on the row it jumps to row1, row2, row3
+pickRow1:
+	jmp row1
+pickRow2:
+	jmp row2
+pickRow3:
+	jmp row3
+
+row1:
+;Then checks the column and jumps to the proper placement
+	cmp userCol, 1
+	je pickCol1
+
+	cmp userCol, 2
+	je pickCol2
+
+	cmp userCol, 3
+	je pickCol3
+
+;Column 1, Row 1
+pickCol1:
+	cmp al, data
+	je done
+	jmp notEqual
+
+;Column 2, Row 1
+pickCol2:
+	cmp al, data + 1
+	je done
+	jmp notEqual
+
+;Column 3, Row 1
+pickCol3:
+	cmp al, data + 2
+	je done
+	jmp notEqual
+
+row2:
+	cmp userCol, 1
+	je pickCol12
+
+	cmp userCol, 2
+	je pickCol22
+
+	cmp userCol, 3
+	je pickCol32
+
+;Column 1, Row 2
+pickCol12:
+	cmp al, data + 3
+	je done
+	jmp notEqual
+
+;Column 2, Row 2
+pickCol22:
+	cmp al, data + 4
+	je done
+	jmp notEqual
+
+;Column 3, Row 2
+pickCol32:
+	cmp al, data + 5
+	je done
+	jmp notEqual
+
+row3:
+	cmp userCol, 1
+	je pickCol13
+
+	cmp userCol, 2
+	je pickCol23
+
+	cmp userCol, 3
+	je pickCol33
+
+;Column 1, Row 3
+pickCol13:
+	cmp al, data + 6
+	je done
+	jmp notEqual
+
+;Column 2, Row 3
+pickCol23:
+	cmp al, data + 7
+	je done
+	jmp notEqual
+
+;Column 3, Row 3
+pickCol33:
+	cmp al, data + 8
+	je done
+	jmp notEqual
+
+notEqual:
+	mWriteStr error1
+	call Crlf
+	cmp whosTurn, 1
+	je backToO
+
+backToX:
+	mXPrompt
+	jmp start
+
+backToO:
+	mOPrompt
+	jmp start
+
+done:
+
+ret
+emptyCheck ENDP
+@
 
 end main
